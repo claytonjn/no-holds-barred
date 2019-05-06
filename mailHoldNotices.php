@@ -425,7 +425,7 @@
 		$courtesyMessage .= "\r\n<br>For your convenience, manage your holds online at http://www.westbloomfieldlibrary.org/\r\n<br>If you have any questions, please reply to this email or call one of the phone numbers listed below.\r\n\r\n<br><br>";
 		$courtesyMessage .= "</body></html>";
 
-		echo $courtesyMessage . "<div style='page-break-after:always;'> </div>"; continue;
+		//echo $courtesyMessage . "<div style='page-break-after:always;'> </div>"; continue;
 
 		$courtesyResult = gsuiteMailer($phpMailer, $courtesySubject, $courtesyMessage, $mailTo, ['email@domain.org', 'WBLIB Notices']);
 		if ($courtesyResult == "Message has been sent.") {
