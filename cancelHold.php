@@ -4,7 +4,7 @@
     $holdId = filter_var($_POST['holdId'], FILTER_VALIDATE_INT);
     
     //Build table to display hold information, mirroring notice email
-    $holdDisplay = "    <table class='hold bib'>
+    $holdDisplay = "    <table style='margin-left:auto; margin-right:auto;'>
                             <tr>
                                 <td class='cover' rowspan=5>{$_POST['coverImg']}</td>
                                 <td class='title'>{$_POST['link']}</td>
@@ -40,11 +40,11 @@
         <script>
             $( document ).ready(function() {
                 $.confirm({
-                    icon: 'fa fa-warning',
+                    icon: 'fas fa-exclamation-triangle',
                     title: 'Are you sure you want to cancel this hold?',
                     content: "<?php echo preg_replace("/\r|\n/", "", $holdDisplay); ?>",
                     type: 'red',
-                    boxWidth: '30%',
+                    boxWidth: '31%',
                     useBootstrap: false,
                     buttons: {
                         yes: {
@@ -66,16 +66,21 @@
                                                         "holdId": "<?php echo $holdId; ?>"
                                                     }
                                         }).done(function (response) {
-                                            self.setContent(response.result);
+                                            self.setType(response.type)
+                                            self.setTitle(response.title)
+                                            self.setContent(response.content);
                                         }).fail(function(){
-                                            var result = `  There was a problem cancelling this hold.<br><br>
-                                                            For assistance, please contact the Circulation department.<br>
-                                                            <b>Email:</b> email@domain.org<br>
-                                                            <b>Phone:</b> (123) 456-7890`;
-                                            self.setContent(result);
+                                            var type = `orange`;
+                                            var title = `There was a problem cancelling this hold`;
+                                            var content = ` For assistance, please contact the Circulation department.<br>
+                                                            <span style='display:inline-block; font-weight:bold; padding-left:2em; padding-right:1em;'><i class='fas fa-at'></i></span> <a href='mailto:email@domain.org'>email@domain.org</a><br>
+                                                            <span style='display:inline-block; font-weight:bold; padding-left:2em; padding-right:1em;'><i class='fas fa-phone'></i></span> <a href='tel:1234567890'>(123) 456-7890</a>`;
+                                            self.setType(type)
+                                            self.setTitle(title);
+                                            self.setContent(content);
                                         });
                                     },
-                                    boxWidth: '30%',
+                                    boxWidth: '31%',
                                     useBootstrap: false,
                                     closeIcon: false
                                 });
@@ -87,8 +92,8 @@
                             action: function () {
                                 $.dialog({
                                     title: 'Not Canceled',
-                                    content: 'Your hold has not been canceled, and must be picked up by <?php echo $_POST['expDate']; ?>',
-                                    boxWidth: '30%',
+                                    content: 'Your hold has not been canceled, and must be picked up by <b><?php echo $_POST['expDate']; ?></b>',
+                                    boxWidth: '31%',
                                     useBootstrap: false,
                                     closeIcon: false
                                 });

@@ -18,10 +18,11 @@
 	$holdResult = getHold($token, $holdId);
 	$holdResult = json_decode($holdResult, true);
     
-    //Set default assistance text, assuming cancelling did not work due to API error or ID mismatch
-    $result = " For assistance, please contact the Circulation department.<br>
-                <b>Email:</b> email@domain.org<br>
-                <b>Phone:</b> (123) 456-7890";
+    //Set default type and assistance text, assuming cancelling did not work due to API error or ID mismatch
+    $type = "orange";
+    $content = " For assistance, please contact the Circulation department.<br>
+                <span style='display:inline-block; font-weight:bold; padding-left:2em; padding-right:1em;'><i class='fas fa-at'></i></span> <a href='mailto:email@domain.org'>email@domain.org</a><br>
+                <span style='display:inline-block; font-weight:bold; padding-left:2em; padding-right:1em;'><i class='fas fa-phone'></i></span> <a href='tel:1234567890'>(123) 456-7890</a>";
     
     if (isset($holdResult['patron'])) {
         $patronWithHold = substr($holdResult['patron'],-7);
@@ -31,19 +32,25 @@
 			//Delete the hold
 			$deleteResult = deleteHold($token, $holdId);
 			if($deleteResult == NULL) {
-				$result = "Your hold on this item has been successfully canceled";
+                $type = false;
+                $title = "Your hold on this item has been successfully canceled";
+                $content = false;
 			} else {
-                $result = "There was a problem cancelling this hold.<br><br>" . $result;
+                $title = "There was a problem cancelling this hold";
+                $result = json_decode($deleteResult, true);
+                $content = "<span style='display:inline-block; text-align:center; width:100%;'><h3>" . $result['name'] . "</h3></span><br><br>" . $content;
             }
         } else {
-            $result = "There was a problem cancelling this hold.<br><br>" . $result;
+            $title = "There was a problem cancelling this hold";
         }
 	} else {
-        $result = "This hold has already been cancelled.<br><br>" . $result;
+        $title = "This hold has already been cancelled";
     }
 
     //Build array to send back
-    $array['result'] = $result;
+    $array['type'] = $type;
+    $array['title'] = $title;
+    $array['content'] = $content;
     
     //Send back json encoded array
     echo json_encode($array);
