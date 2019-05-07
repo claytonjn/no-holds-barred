@@ -500,9 +500,15 @@
 															<input type='hidden' name='expDate' value='{$expdate}'>
 															<input class='button cancel' type='submit' value='Cancel' />
 														</form>
-														<form action='./extendHold.php' method='get' target='_blank'>
+														<form action='./extendHold.php' method='post' target='_blank'>
 															<input type='hidden' name='patronId' value='{$sierraCourtesyHolds[$j]['patron_num']}'>
 															<input type='hidden' name='holdId' value='{$sierraCourtesyHolds[$j]['hold_id']}'>
+															<input type='hidden' name='coverImg' value='{$encodedCoverImg}'>
+															<input type='hidden' name='link' value='{$encodedLink}'>
+															<input type='hidden' name='bestAuthor' value='{$bestAuthor}'>
+															<input type='hidden' name='matType' value='{$mattype}'>
+															<input type='hidden' name='pickupLocation' value='{$pickupLocation}'>
+															<input type='hidden' name='expDate' value='{$expdate}'>
 															<input class='button extend' type='submit' value='Extend' />
 														</form>
 													</td>
