@@ -95,11 +95,7 @@
 											margin:				4px 2px;
 											cursor:				pointer;
 										}
-										.button.extend {
-											background-color: 	green;
-											color:				white;
-										}
-										.button.delete {
+										.button.cancel {
 											background-color: 	red;
 											color:				white;
 										}
@@ -166,22 +162,19 @@
 											</tr>
 											<tr>
 												<td class='expdate'><b>Pickup By: </b>{$expdate}</td>
-											</tr>
-											<tr>
+											</tr>";
+			if($bnumber != 'b') {
+				$mailMessage .= "			<tr>
 												<td class='buttons' colspan=2>
-													<form action='./extendHold.php' method='get' target='_blank'>
+													<form action='./cancelHold.php' method='get' target='_blank'>
 														<input type='hidden' name='patronId' value='{$pnumber}'>
 														<input type='hidden' name='holdId' value='{$iteminfo['hold_id']}'>
-														<input class='button extend' type='submit' value='Extend' />
-													</form>
-													<form action='./deleteHold.php' method='get' target='_blank'>
-														<input type='hidden' name='patronId' value='{$pnumber}'>
-														<input type='hidden' name='holdId' value='{$iteminfo['hold_id']}'>
-														<input class='button delete' type='submit' value='Delete' />
+														<input class='button cancel' type='submit' value='Cancel' />
 													</form>
 												</td>
-											</tr>
-										</table>
+											</tr>";
+			}
+			$mailMessage .= "			</table>
 										<hr>
 									</td>
 								</tr>";
@@ -423,7 +416,7 @@
 											background-color: 	green;
 											color:				white;
 										}
-										.button.delete {
+										.button.cancel {
 											background-color: 	red;
 											color:				white;
 										}
@@ -481,23 +474,25 @@
 													<td class='pickuplocation'><b>Pickup At: </b>{$pickuploaction}</td>
 												</tr>
 												<tr>
-													<td class='expdate'><b>Pickup By: </b>{$expdate}</td>
-												</tr>
-												<tr>
+													<td class='expdate'><b>Pickup By: <u>{$expdate}</u></b></td>
+												</tr>";
+			if($bnumber != 'b') {
+				$courtesyMessage .= "			<tr>
 													<td class='buttons' colspan=2>
+														<form action='./cancelHold.php' method='get' target='_blank'>
+															<input type='hidden' name='patronId' value='{$sierraCourtesyHolds[$j]['patron_num']}'>
+															<input type='hidden' name='holdId' value='{$sierraCourtesyHolds[$j]['hold_id']}'>
+															<input class='button cancel' type='submit' value='Cancel' />
+														</form>
 														<form action='./extendHold.php' method='get' target='_blank'>
 															<input type='hidden' name='patronId' value='{$sierraCourtesyHolds[$j]['patron_num']}'>
 															<input type='hidden' name='holdId' value='{$sierraCourtesyHolds[$j]['hold_id']}'>
 															<input class='button extend' type='submit' value='Extend' />
 														</form>
-														<form action='./deleteHold.php' method='get' target='_blank'>
-															<input type='hidden' name='patronId' value='{$sierraCourtesyHolds[$j]['patron_num']}'>
-															<input type='hidden' name='holdId' value='{$sierraCourtesyHolds[$j]['hold_id']}'>
-															<input class='button delete' type='submit' value='Delete' />
-														</form>
 													</td>
-												</tr>
-											</table>
+												</tr>";
+			}
+			$courtesyMessage .= "			</table>
 											<hr>
 										</td>
 									</tr>";
