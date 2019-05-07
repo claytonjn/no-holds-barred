@@ -53,7 +53,7 @@
                             keys: ['enter'],
                             action: function(){
                                 $.dialog({
-                                    title: 'Processed',
+                                    title: false,
                                     content: function () {
                                         var self = this;
                                         return $.ajax({
@@ -66,11 +66,13 @@
                                                         "holdId": "<?php echo $holdId; ?>"
                                                     }
                                         }).done(function (response) {
-                                            self.setContent('patronId: ' + response.patronId);
-                                            self.setContentAppend('<br>holdId: ' + response.holdId);
-                                            self.setTitle(response.name);
+                                            self.setContent(response.result);
                                         }).fail(function(){
-                                            self.setContent('Something went wrong.');
+                                            var result = `  There was a problem cancelling this hold.<br><br>
+                                                            For assistance, please contact the Circulation department.<br>
+                                                            <b>Email:</b> email@domain.org<br>
+                                                            <b>Phone:</b> (123) 456-7890`;
+                                            self.setContent(result);
                                         });
                                     },
                                     boxWidth: '30%',

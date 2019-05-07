@@ -69,6 +69,78 @@
 		}
 
 	}
+	
+	function getHold($token, $holdId){
+   
+		include "constants.php";
+
+		// Get cURL resource
+		$curl = curl_init();
+		// Set some options - we are passing in a useragent too here
+		curl_setopt_array($curl, array(
+			CURLOPT_CUSTOMREQUEST => 'GET',
+			CURLOPT_RETURNTRANSFER => 1,
+			CURLOPT_SSL_VERIFYHOST=> 0,
+			CURLOPT_SSL_VERIFYPEER=> 0,
+			CURLOPT_URL => "{$apiurl}patrons/holds/{$holdId}?fields=patron,pickupLocation,note",
+			CURLOPT_HTTPHEADER => array(
+					'Host: '.$hosturl,
+					'Authorization: Bearer '.$token,
+					'Content-Type: application/json'
+			)
+		));
+		// Send the request & save response to $resp
+		$resp = curl_exec($curl);
+
+		//Check if CURL REQUEST FAILED TO PROCESS
+		$err = NULL;
+		if($resp === FALSE)
+			$err = curl_error($curl);
+
+		// Close request to clear up some resources
+		curl_close($curl);
+
+		if($err)
+			return $err;
+		else
+			return $resp;
+		
+	}
+
+	function deleteHold($token, $holdId) {
+		include "constants.php";
+
+		// Get cURL resource
+		$curl = curl_init();
+		// Set some options - we are passing in a useragent too here
+		curl_setopt_array($curl, array(
+			CURLOPT_CUSTOMREQUEST => 'DELETE',
+			CURLOPT_RETURNTRANSFER => 1,
+			CURLOPT_SSL_VERIFYHOST=> 0,
+			CURLOPT_SSL_VERIFYPEER=> 0,
+			CURLOPT_URL => "{$apiurl}patrons/holds/{$holdId}",
+			CURLOPT_HTTPHEADER => array(
+					'Host: '.$hosturl,
+					'Authorization: Bearer '.$token
+			)
+		));
+		// Send the request & save response to $resp
+		$resp = curl_exec($curl);
+
+		//Check if CURL REQUEST FAILED TO PROCESS
+		$err = NULL;
+		if($resp === FALSE)
+			$err = curl_error($curl);
+
+		// Close request to clear up some resources
+		curl_close($curl);
+
+		if($err)
+			return $err;
+		else
+			return $resp;
+
+	}
 
 	function placeHold($token, $id, $body) {
 		include "constants.php";
