@@ -1,6 +1,9 @@
 <?php 
+    //Serialize and validate input data
     $patronId = filter_var($_POST['patronId'], FILTER_VALIDATE_INT);
     $holdId = filter_var($_POST['holdId'], FILTER_VALIDATE_INT);
+    
+    //Build table to display hold information, mirroring notice email
     $holdDisplay = "    <table class='hold bib'>
                             <tr>
                                 <td class='cover' rowspan=5>{$_POST['coverImg']}</td>
@@ -24,10 +27,10 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Are you sure?</title>
+        <title>Cancel Hold</title>
         <script
-            src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-            integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8="
+            src="https://code.jquery.com/jquery-3.4.1.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
             crossorigin="anonymous"></script>
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
@@ -49,7 +52,31 @@
                             btnClass: 'btn-red',
                             keys: ['enter'],
                             action: function(){
-                                $.alert('Confirmed!');
+                                $.dialog({
+                                    title: 'Processed',
+                                    content: function () {
+                                        var self = this;
+                                        return $.ajax({
+                                            url: 'cancelHoldProcess.php',
+                                            dataType: 'json',
+                                            method: 'post',
+                                            data:
+                                                    {
+                                                        "patronId": "<?php echo $patronId; ?>",
+                                                        "holdId": "<?php echo $holdId; ?>"
+                                                    }
+                                        }).done(function (response) {
+                                            self.setContent('patronId: ' + response.patronId);
+                                            self.setContentAppend('<br>holdId: ' + response.holdId);
+                                            self.setTitle(response.name);
+                                        }).fail(function(){
+                                            self.setContent('Something went wrong.');
+                                        });
+                                    },
+                                    boxWidth: '30%',
+                                    useBootstrap: false,
+                                    closeIcon: false
+                                });
                             }
                         },
                         no: {
@@ -58,7 +85,7 @@
                             action: function () {
                                 $.dialog({
                                     title: 'Not Canceled',
-                                    content: 'Your hold has not been canceled.',
+                                    content: 'Your hold has not been canceled, and must be picked up by <?php echo $_POST['expDate']; ?>',
                                     boxWidth: '30%',
                                     useBootstrap: false,
                                     closeIcon: false
