@@ -71,16 +71,56 @@
 						<html>
 							<head>
 								<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+								<style>
+										.announcement {
+											color:				blue;
+											font-size:			18px;
+										}
+										#holds, .hold.bib {
+											width:				100%;
+										}
+										.cover {
+											width: 				80px;
+										}
+										.buttons form {
+											display:			inline-block;
+										}
+										.button {
+											border:				none;
+											padding:			12px 24px;
+											text-align:			center;
+											text-decoration:	none;
+											display:			inline-block;
+											font-size:			16px;
+											margin:				4px 2px;
+											cursor:				pointer;
+										}
+										.button.extend {
+											background-color: 	green;
+											color:				white;
+										}
+										.button.delete {
+											background-color: 	red;
+											color:				white;
+										}
+										#hours {
+											margin-left:		auto;
+											margin-right:		auto;
+										}
+										#hours td {
+											padding-right:		10px;
+										}
+									</style>
 							</head>
 						";
 
-		$mailMessage .= "{$patron['first_name']} {$patron['middle_name']} {$patron['last_name']}<br><br><b span style='color:blue; font-size:18px'>READY FOR PICKUP!</b> The item(s) below are being held in your name at the pickup location indicated, until the date listed. For your convenience, manage your holds online at http://www.westbloomfieldlibrary.org/\r\n<br>\r\n<br><table id='holds' style='width:100%;'>";
+		$mailMessage .= "{$patron['first_name']} {$patron['middle_name']} {$patron['last_name']}<br><br><b span class='announcement'>READY FOR PICKUP!</b> The item(s) below are being held in your name at the pickup location indicated, until the date listed.\r\n<br>\r\n<br><table id='holds'>";
 
 		//Pull emails in an array so we can send the same email to multiple addresses if desired
 		$mailTo = explode(",", $patron['email']);
 
 		//Get Titles for sending out Emails
-		$emailSubQuery = "	SELECT		title, best_author, trigger_date + INTERVAL '7' DAY AS exp_date, pickup_location_code, bcode2, bib_num, ident
+		$emailSubQuery = "	SELECT		hold_id, title, best_author, trigger_date + INTERVAL '7' DAY AS exp_date, pickup_location_code, bcode2, bib_num, ident
 							FROM		holdnotice
 							WHERE       patron_num = '{$patron['patron_num']}'
                             AND         (email_datetime = ''
@@ -93,8 +133,9 @@
 
 		while($iteminfo = mysqli_fetch_assoc($emailSubResult)) {
 
-			$expdate=date("M d, Y", strtotime($iteminfo['exp_date']));
-			$bnumber= substr($iteminfo['bib_num'], 0, -1);
+			$expdate =date("M d, Y", strtotime($iteminfo['exp_date']));
+			$bnumber = substr($iteminfo['bib_num'], 0, -1);
+			$pnumber = substr($patron['patron_num'], 1, -1);
 			$pickuploaction = $pickuplocations[$iteminfo['pickup_location_code']];
 			if($bnumber == 'b') {
 				$link=$iteminfo['title'];
@@ -109,60 +150,75 @@
 
 			$mailMessage .= "	<tr>
 									<td>
-										<table class='hold bib' style='width: 100%;'>
+										<table class='hold bib'>
 											<tr>
-												<td class='cover' rowspan=5 style='width: 80px;'>{$coverimg}</td>
-												<td class='title' colspan=4>{$link}</td>
+												<td class='cover' rowspan=5>{$coverimg}</td>
+												<td class='title'>{$link}</td>
 											</tr>
 											<tr>
-												<td class='edition_author' colspan=4>{$iteminfo['best_author']}</td>
+												<td class='edition_author'>{$iteminfo['best_author']}</td>
 											</tr>
 											<tr>
-												<td class='bcode2' colspan=4>{$mattype}</td>
+												<td class='bcode2'>{$mattype}</td>
 											</tr>
 											<tr>
-												<td class='pickuplocation' colspan=4><b>Pickup At: </b>{$pickuploaction}</td>
+												<td class='pickuplocation'><b>Pickup At: </b>{$pickuploaction}</td>
 											</tr>
 											<tr>
-												<td class='expdate' colspan=4><b>Pickup By: </b>{$expdate}</td>
+												<td class='expdate'><b>Pickup By: </b>{$expdate}</td>
+											</tr>
+											<tr>
+												<td class='buttons' colspan=2>
+													<form action='./extendHold.php' method='get' target='_blank'>
+														<input type='hidden' name='patronId' value='{$pnumber}'>
+														<input type='hidden' name='holdId' value='{$iteminfo['hold_id']}'>
+														<input class='button extend' type='submit' value='Extend' />
+													</form>
+													<form action='./deleteHold.php' method='get' target='_blank'>
+														<input type='hidden' name='patronId' value='{$pnumber}'>
+														<input type='hidden' name='holdId' value='{$iteminfo['hold_id']}'>
+														<input class='button delete' type='submit' value='Delete' />
+													</form>
+												</td>
 											</tr>
 										</table>
+										<hr>
 									</td>
 								</tr>";
 		}
 
 		$mailMessage .= "</table>";
-		$mailMessage .= "\r\n<br><table id='hours' align='center' style='margin-left:auto; margin-right:auto;'>
+		$mailMessage .= "\r\n<br><table id='hours' align='center'>
 								<tr>
 									<th colspan='2'>Library Hours</th>
 								</tr>";
 		$currentHour = $hours[0];
-		$mailMessage .= "<tr><td style='padding-right:10px;'>{$dowMap[0]}";
+		$mailMessage .= "<tr><td>{$dowMap[0]}";
 		for($i = 1; $i < count($hours); $i++) {
 			if($hours[$i] != $currentHour) {
 				$times = explode("-", $hours[$i-1]);
 				$timeOpen = date("g a", strtotime($times[0]));
 				$timeClose = date("g a", strtotime($times[1]));
 				$mailMessage .= " - {$dowMap[$i-1]}</td><td>{$timeOpen} - {$timeClose}</td></tr>";
-				$mailMessage .= "<tr><td style='padding-right:10px;'>{$dowMap[$i]}";
+				$mailMessage .= "<tr><td>{$dowMap[$i]}";
 				$currentHour = $hours[$i];
 			}
 		}
 		$mailMessage .= " (Summer)</td><td>12 pm - 5 pm</td></tr>";
 		$mailMessage .= "		<tr>
-									<td style='padding-right:10px;'>Sun (School Year)</td>
+									<td>Sun (School Year)</td>
 									<td>12 pm - 8 pm</td>
 								</tr>
 								<tr>
-									<td style='padding-right:10px;'>Sun (Westacres)</td>
+									<td>Sun (Westacres)</td>
 									<td>12 pm - 5 pm</td>
 								</tr>
 							</table>";
 
-		$mailMessage .= "\r\n<br>If you have any questions, please reply to this email or call one of the phone numbers listed below.\r\n\r\n<br><br>";
+		$mailMessage .= "For your convenience, manage your holds online at http://www.westbloomfieldlibrary.org/\r\n<br>If you have any questions, please reply to this email or call one of the phone numbers listed below.\r\n\r\n<br><br>";
 		$mailMessage .= "</body></html>";
 
-		// echo $mailMessage . "<div style='page-break-after:always;'> </div>";
+		//echo $mailMessage . "<div style='page-break-after:always;'> </div>"; continue;
 
 		$mailResult = gsuiteMailer($phpMailer, $mailSubject, $mailMessage, $mailTo, ['email@domain.org', 'WBLIB Notices']);
 		if ($mailResult == "Message has been sent.") {
@@ -339,10 +395,50 @@
 							<html>
 								<head>
 									<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+									<style>
+										.announcement {
+											color:				orange;
+											font-size:			18px;
+										}
+										#holds, .hold.bib {
+											width:				100%;
+										}
+										.cover {
+											width: 				80px;
+										}
+										.buttons form {
+											display:			inline-block;
+										}
+										.button {
+											border:				none;
+											padding:			12px 24px;
+											text-align:			center;
+											text-decoration:	none;
+											display:			inline-block;
+											font-size:			16px;
+											margin:				4px 2px;
+											cursor:				pointer;
+										}
+										.button.extend {
+											background-color: 	green;
+											color:				white;
+										}
+										.button.delete {
+											background-color: 	red;
+											color:				white;
+										}
+										#hours {
+											margin-left:		auto;
+											margin-right:		auto;
+										}
+										#hours td {
+											padding-right:		10px;
+										}
+									</style>
 								</head>
 							";
 
-		$courtesyMessage .= "{$sierraCourtesyHolds[$i]['first_name']} {$sierraCourtesyHolds[$i]['middle_name']} {$sierraCourtesyHolds[$i]['last_name']}<br><br><b span style='color:orange; font-size:18px'>READY FOR PICKUP!</b> Just a reminder, you have holds ready to be picked up. These items will only be available until the date listed. If you do not pick up the items, they will be placed back on the shelf or given to the next patron on the hold list.\r\n<br>\r\n<br><table id='holds' style='width:100%;'>";
+		$courtesyMessage .= "{$sierraCourtesyHolds[$i]['first_name']} {$sierraCourtesyHolds[$i]['middle_name']} {$sierraCourtesyHolds[$i]['last_name']}<br><br><b span class='announcement'>READY FOR PICKUP!</b> Just a reminder, you have holds ready to be picked up. These items will only be available until the date listed. If you do not pick up the items, they will be placed back on the shelf or given to the next patron on the hold list.\r\n<br>\r\n<br><table id='holds'>";
 
 		//Pull emails in an array so we can send the same email to multiple addresses if desired
 		$mailTo = explode(",", $sierraCourtesyHolds[$i]['email']);
@@ -369,56 +465,71 @@
 			}
 
 			$courtesyMessage .= "	<tr>
-									<td>
-										<table class='hold bib' style='width: 100%;'>
-											<tr>
-												<td class='cover' rowspan=5 style='width: 80px;'>{$coverimg}</td>
-												<td class='title' colspan=4>{$link}</td>
-											</tr>
-											<tr>
-												<td class='edition_author' colspan=4>{$bestAuthor}</td>
-											</tr>
-											<tr>
-												<td class='bcode2' colspan=4>{$mattype}</td>
-											</tr>
-											<tr>
-												<td class='pickuplocation' colspan=4><b>Pickup At: </b>{$pickuploaction}</td>
-											</tr>
-											<tr>
-												<td class='expdate' colspan=4><b>Pickup By: </b>{$expdate}</td>
-											</tr>
-										</table>
-									</td>
-								</tr>";
+										<td>
+											<table class='hold bib'>
+												<tr>
+													<td class='cover' rowspan=5>{$coverimg}</td>
+													<td class='title'>{$link}</td>
+												</tr>
+												<tr>
+													<td class='edition_author'>{$bestAuthor}</td>
+												</tr>
+												<tr>
+													<td class='bcode2'>{$mattype}</td>
+												</tr>
+												<tr>
+													<td class='pickuplocation'><b>Pickup At: </b>{$pickuploaction}</td>
+												</tr>
+												<tr>
+													<td class='expdate'><b>Pickup By: </b>{$expdate}</td>
+												</tr>
+												<tr>
+													<td class='buttons' colspan=2>
+														<form action='./extendHold.php' method='get' target='_blank'>
+															<input type='hidden' name='patronId' value='{$sierraCourtesyHolds[$j]['patron_num']}'>
+															<input type='hidden' name='holdId' value='{$sierraCourtesyHolds[$j]['hold_id']}'>
+															<input class='button extend' type='submit' value='Extend' />
+														</form>
+														<form action='./deleteHold.php' method='get' target='_blank'>
+															<input type='hidden' name='patronId' value='{$sierraCourtesyHolds[$j]['patron_num']}'>
+															<input type='hidden' name='holdId' value='{$sierraCourtesyHolds[$j]['hold_id']}'>
+															<input class='button delete' type='submit' value='Delete' />
+														</form>
+													</td>
+												</tr>
+											</table>
+											<hr>
+										</td>
+									</tr>";
 			$j++;
 		}
 
 		$i = $j;
 
 		$courtesyMessage .= "</table>";
-		$courtesyMessage .= "\r\n<br><table id='hours' align='center' style='margin-left:auto; margin-right:auto;'>
+		$courtesyMessage .= "\r\n<br><table id='hours' align='center'>
 								<tr>
 									<th colspan='2'>Library Hours</th>
 								</tr>";
 		$currentHour = $hours[0];
-		$courtesyMessage .= "<tr><td style='padding-right:10px;'>{$dowMap[0]}";
+		$courtesyMessage .= "<tr><td>{$dowMap[0]}";
 		for($k = 1; $k < count($hours); $k++) {
 			if($hours[$k] != $currentHour) {
 				$times = explode("-", $hours[$k-1]);
 				$timeOpen = date("g a", strtotime($times[0]));
 				$timeClose = date("g a", strtotime($times[1]));
 				$courtesyMessage .= " - {$dowMap[$k-1]}</td><td>{$timeOpen} - {$timeClose}</td></tr>";
-				$courtesyMessage .= "<tr><td style='padding-right:10px;'>{$dowMap[$k]}";
+				$courtesyMessage .= "<tr><td>{$dowMap[$k]}";
 				$currentHour = $hours[$k];
 			}
 		}
 		$courtesyMessage .= " (Summer)</td><td>12 pm - 5 pm</td></tr>";
 		$courtesyMessage .= "		<tr>
-									<td style='padding-right:10px;'>Sun (School Year)</td>
+									<td>Sun (School Year)</td>
 									<td>12 pm - 8 pm</td>
 								</tr>
 								<tr>
-									<td style='padding-right:10px;'>Sun (Westacres)</td>
+									<td>Sun (Westacres)</td>
 									<td>12 pm - 5 pm</td>
 								</tr>
 							</table>";
