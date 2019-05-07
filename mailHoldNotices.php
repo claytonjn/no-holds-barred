@@ -173,7 +173,7 @@
 														<input type='hidden' name='holdId' value='{$iteminfo['hold_id']}'>
 														<input type='hidden' name='coverImg' value='{$encodedCoverImg}'>
 														<input type='hidden' name='link' value='{$encodedLink}'>
-														<input type='hidden' name='bestAuthor' value='{$bestAuthor}'>
+														<input type='hidden' name='bestAuthor' value='{$iteminfo['best_author']}'>
 														<input type='hidden' name='matType' value='{$mattype}'>
 														<input type='hidden' name='pickupLocation' value='{$pickupLocation}'>
 														<input type='hidden' name='expDate' value='{$expdate}'>
