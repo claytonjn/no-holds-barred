@@ -132,7 +132,7 @@
 			$expdate =date("M d, Y", strtotime($iteminfo['exp_date']));
 			$bnumber = substr($iteminfo['bib_num'], 0, -1);
 			$pnumber = substr($patron['patron_num'], 1, -1);
-			$pickuploaction = $pickuplocations[$iteminfo['pickup_location_code']];
+			$pickupLocation = $pickuplocations[$iteminfo['pickup_location_code']];
 			if($bnumber == 'b') {
 				$link=$iteminfo['title'];
 				$coverimg = "<img src='http://www.wblib.org/graphics/mel.png'>";
@@ -158,7 +158,7 @@
 												<td class='bcode2'>{$mattype}</td>
 											</tr>
 											<tr>
-												<td class='pickuplocation'><b>Pickup At: </b>{$pickuploaction}</td>
+												<td class='pickuplocation'><b>Pickup At: </b>{$pickupLocation}</td>
 											</tr>
 											<tr>
 												<td class='expdate'><b>Pickup By: </b>{$expdate}</td>
@@ -445,7 +445,7 @@
 			$title = cleanFromSierra("title", $sierraCourtesyHolds[$j]['title']);
 			$ident = cleanFromSierra("ident", $sierraCourtesyHolds[$j]['ident']);
 			$expdate=date("M d, Y", strtotime($sierraCourtesyHolds[$j]['exp_date']));
-			$pickuploaction = $pickuplocations[$sierraCourtesyHolds[$j]['pickup_location_code']];
+			$pickupLocation = $pickuplocations[$sierraCourtesyHolds[$j]['pickup_location_code']];
 			if($bnumber == 'b') {
 				$link=$title;
 				$coverimg = "<img src='http://www.wblib.org/graphics/mel.png'>";
@@ -471,7 +471,7 @@
 													<td class='bcode2'>{$mattype}</td>
 												</tr>
 												<tr>
-													<td class='pickuplocation'><b>Pickup At: </b>{$pickuploaction}</td>
+													<td class='pickuplocation'><b>Pickup At: </b>{$pickupLocation}</td>
 												</tr>
 												<tr>
 													<td class='expdate'><b>Pickup By: <u>{$expdate}</u></b></td>
