@@ -15,6 +15,7 @@
 
 	//**This include file includes functions, such as check digit generator
 	include_once ("./includes/functions.php");
+	include_once ("./includes/constants.php");
 
 	//Connect to the web_common database to pull library hours
 	$hoursLink = web_hours_i() or die ("Cannot connect to server");
