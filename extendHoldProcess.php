@@ -100,10 +100,10 @@
 
     //Build array to send back
     $array['type'] = $type;
-    $array['title'] = $title ?: false;
+    $array['title'] = isset($title) ? $title : false;
     $array['content'] = $content;
     $array['delayPrompt'] = $delayPrompt;
-    $array['bibHoldCount'] = $bibHoldCount ?: NULL;
+    $array['bibHoldCount'] = isset($bibHoldCount) ? $bibHoldCount : NULL;
     
     //Send back json encoded array
     echo json_encode($array);

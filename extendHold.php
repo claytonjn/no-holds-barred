@@ -58,10 +58,19 @@
                                 self.setTitle(response.title)
                                 self.setContent(response.content);
                             } else {
+                                var holdCountText = "";
+                                if(response.bibHoldCount == 1) {
+                                    holdCountText = "There is currently 1 person on hold for this item. ";
+                                } else {
+                                    holdCountText = "There are currently " + response.bibHoldCount + " people on hold for this item. ";
+                                }
                                 self.close();
                                 $.confirm({
                                     title: 'Hold cannot be extended',
-                                    content: "Your hold for the following item could not be extended.<br><br><?php echo preg_replace("/\r|\n/", "", $holdDisplay); ?><br>There are currently " + response.bibHoldCount + " people on hold for this item. Would you like to delay your hold by moving to the bottom of the hold list?",
+                                    content: `  Your hold for the following item could not be extended.<br><br>
+                                                <?php echo preg_replace("/\r|\n/", "", $holdDisplay); ?><br>`
+                                                + holdCountText +
+                                                `Would you like to delay your hold by moving to the bottom of the hold list?`,
                                     type: 'orange',
                                     boxWidth: '31%',
                                     useBootstrap: false,
