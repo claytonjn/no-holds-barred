@@ -25,6 +25,34 @@
 		$string = trim($string);
 		return $string;
 	}
+	
+	function holdCount($sierraDNAconn, $holdId) {
+		//Check to see if there are any Bib Level holds for that item
+		$holdQuery = "	DROP TABLE IF EXISTS item_held;";
+		$holdQuery .= "	CREATE TEMP TABLE item_held
+						(
+							id bigint,
+							record_id bigint,
+							bib_record_id bigint
+						);";
+		$holdQuery .= "	INSERT INTO	item_held
+						SELECT		h.id, h.record_id, brirl.bib_record_id
+						FROM		sierra_view.hold AS h
+						LEFT JOIN	sierra_view.bib_record_item_record_link AS brirl
+									ON brirl.item_record_id = h.record_id
+						WHERE		h.id='{$holdId}';";
+		$holdQuery .= "	SELECT		count(h.record_id), bv.record_num
+						FROM		item_held as ih
+						LEFT JOIN	sierra_view.hold as h
+									ON ih.bib_record_id = h.record_id
+						LEFT JOIN	sierra_view.bib_view as bv
+									ON bv.id = ih.bib_record_id
+						GROUP BY	bv.record_num";
+
+		$sierraHoldResult = pg_query($sierraDNAconn, $holdQuery) or die('Query failed: ' . pg_last_error());
+
+		return pg_fetch_assoc($sierraHoldResult);
+	}
 
 	function getAccessToken() {
 		include "constants.php";
@@ -82,7 +110,7 @@
 			CURLOPT_RETURNTRANSFER => 1,
 			CURLOPT_SSL_VERIFYHOST=> 0,
 			CURLOPT_SSL_VERIFYPEER=> 0,
-			CURLOPT_URL => "{$apiurl}patrons/holds/{$holdId}?fields=patron,pickupLocation,note",
+			CURLOPT_URL => "{$apiurl}patrons/holds/{$holdId}?fields=patron,pickupLocation,note,record",
 			CURLOPT_HTTPHEADER => array(
 					'Host: '.$hosturl,
 					'Authorization: Bearer '.$token,

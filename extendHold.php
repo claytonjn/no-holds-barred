@@ -4,7 +4,7 @@
     $holdId = filter_var($_POST['holdId'], FILTER_VALIDATE_INT);
     
     //Build table to display hold information, mirroring notice email
-    $holdDisplay = "    <table class='hold bib'>
+    $holdDisplay = "    <table style='margin-left:auto; margin-right:auto;'>
                             <tr>
                                 <td class='cover' rowspan=5>{$_POST['coverImg']}</td>
                                 <td class='title'>{$_POST['link']}</td>
@@ -40,7 +40,7 @@
         <script>
             $( document ).ready(function() {
                 $.dialog({
-                    title: 'Processed',
+                    title: false,
                     content: function () {
                         var self = this;
                         return $.ajax({
@@ -53,68 +53,86 @@
                                         "holdId": "<?php echo $holdId; ?>"
                                     }
                         }).done(function (response) {
-                            self.setContent('patronId: ' + response.patronId);
-                            self.setContentAppend('<br>holdId: ' + response.holdId);
-                            self.setTitle(response.name);
-                        }).fail(function(){
-                            self.close();
-                            $.confirm({
-                                title: 'Hold cannot be extended',
-                                content: "Your hold for the following item could not be extended.<br><br><?php echo preg_replace("/\r|\n/", "", $holdDisplay); ?><br>Would you like to delay your hold by moving to the bottom of the hold list?",
-                                type: 'orange',
-                                boxWidth: '30%',
-                                useBootstrap: false,
-                                buttons: {
-                                    yes: {
-                                        text: 'Yes',
-                                        btnClass: 'btn-orange',
-                                        keys: ['enter'],
-                                        action: function(){
-                                            $.dialog({
-                                                title: 'Processed',
-                                                content: function () {
-                                                    var self = this;
-                                                    return $.ajax({
-                                                        url: 'delayHoldProcess.php',
-                                                        dataType: 'json',
-                                                        method: 'post',
-                                                        data:
-                                                                {
-                                                                    "patronId": "<?php echo $patronId; ?>",
-                                                                    "holdId": "<?php echo $holdId; ?>"
-                                                                }
-                                                    }).done(function (response) {
-                                                        self.setContent('patronId: ' + response.patronId);
-                                                        self.setContentAppend('<br>holdId: ' + response.holdId);
-                                                        self.setTitle(response.name);
-                                                    }).fail(function(){
-                                                        self.setContent('Something went wrong.');
-                                                    });
-                                                },
-                                                boxWidth: '30%',
-                                                useBootstrap: false,
-                                                closeIcon: false
-                                            });
-                                        }
-                                    },
-                                    no: {
-                                        text: 'No',
-                                        keys: ['esc'],
-                                        action: function () {
-                                            $.dialog({
-                                                title: 'Not Delayed',
-                                                content: 'Your hold has not been delayed, and must be picked up by <?php echo $_POST['expDate']; ?>',
-                                                boxWidth: '30%',
-                                                useBootstrap: false,
-                                                closeIcon: false
-                                            });
+                            if(response.delayPrompt != true) {
+                                self.setType(response.type)
+                                self.setTitle(response.title)
+                                self.setContent(response.content);
+                            } else {
+                                self.close();
+                                $.confirm({
+                                    title: 'Hold cannot be extended',
+                                    content: "Your hold for the following item could not be extended.<br><br><?php echo preg_replace("/\r|\n/", "", $holdDisplay); ?><br>There are currently " + response.bibHoldCount + " people on hold for this item. Would you like to delay your hold by moving to the bottom of the hold list?",
+                                    type: 'orange',
+                                    boxWidth: '31%',
+                                    useBootstrap: false,
+                                    buttons: {
+                                        yes: {
+                                            text: 'Yes',
+                                            btnClass: 'btn-orange',
+                                            keys: ['enter'],
+                                            action: function(){
+                                                $.dialog({
+                                                    title: false,
+                                                    content: function () {
+                                                        var self = this;
+                                                        return $.ajax({
+                                                            url: 'delayHoldProcess.php',
+                                                            dataType: 'json',
+                                                            method: 'post',
+                                                            data:
+                                                                    {
+                                                                        "patronId": "<?php echo $patronId; ?>",
+                                                                        "holdId": "<?php echo $holdId; ?>"
+                                                                    }
+                                                        }).done(function (response) {
+                                                            self.setType(response.type)
+                                                            self.setTitle(response.title)
+                                                            self.setContent(response.content);
+                                                        }).fail(function(){
+                                                            var type = `orange`;
+                                                            var title = `There was a problem delaying this hold`;
+                                                            var content = ` For assistance, please contact the Circulation department.<br>
+                                                                            <span style='display:inline-block; font-weight:bold; padding-left:2em; padding-right:1em;'><i class='fas fa-at'></i></span> <a href='mailto:email@domain.org'>circstaff@wblib.org</a><br>
+                                                                            <span style='display:inline-block; font-weight:bold; padding-left:2em; padding-right:1em;'><i class='fas fa-phone'></i></span> <a href='tel:1234567890'>(123) 456-7890</a>`;
+                                                            self.setType(type)
+                                                            self.setTitle(title);
+                                                            self.setContent(content);
+                                                        });
+                                                    },
+                                                    boxWidth: '31%',
+                                                    useBootstrap: false,
+                                                    closeIcon: false
+                                                });
+                                            }
+                                        },
+                                        no: {
+                                            text: 'No',
+                                            keys: ['esc'],
+                                            action: function () {
+                                                $.dialog({
+                                                    title: 'Not Delayed',
+                                                    content: 'Your hold has not been delayed, and must be picked up by <b><?php echo $_POST['expDate']; ?></b>',
+                                                    boxWidth: '31%',
+                                                    useBootstrap: false,
+                                                    closeIcon: false
+                                                });
+                                            }
                                         }
                                     }
-                                }
-                            });
+                                });
+                            }
+                        }).fail(function(){
+                            var type = `orange`;
+                            var title = `There was a problem extending this hold`;
+                            var content = ` For assistance, please contact the Circulation department.<br>
+                                            <span style='display:inline-block; font-weight:bold; padding-left:2em; padding-right:1em;'><i class='fas fa-at'></i></span> <a href='mailto:email@domain.org'>email@domain.org</a><br>
+                                            <span style='display:inline-block; font-weight:bold; padding-left:2em; padding-right:1em;'><i class='fas fa-phone'></i></span> <a href='tel:1234567890'>(123) 456-7890</a>`;
+                            self.setType(type)
+                            self.setTitle(title);
+                            self.setContent(content);
                         });
                     },
-                    boxWidth: '30%',
+                    boxWidth: '31%',
                     useBootstrap: false,
                     closeIcon: false
                 });
