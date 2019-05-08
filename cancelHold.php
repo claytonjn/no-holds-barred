@@ -27,6 +27,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
         <title>Cancel Hold</title>
         <script
             src="https://code.jquery.com/jquery-3.4.1.min.js"
@@ -35,6 +36,13 @@
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+        <style>
+            @media only screen and (max-width: 600px) {
+                .jconfirm-box {
+                    width:  90% !important;
+                }
+            }
+        </style>
     </head>
     <body>
         <script>
